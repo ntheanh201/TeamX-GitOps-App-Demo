@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-#  node: circleci/node@4.7
   docker: circleci/docker@2.0.3
 
 jobs:
@@ -43,7 +42,6 @@ jobs:
             else
               echo "Skipped";
             fi
-#    resource_class: large
   deploy:
     environment:
       EC2_USERNAME: ubuntu
@@ -57,7 +55,7 @@ jobs:
           name: Deploy
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/TeamX-GitOps; ./deploy.simple.sh)"
+              ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/TeamX-GitOps/simple-app; ./deploy.simple.sh)"
             else
               echo "Skipped";
             fi
