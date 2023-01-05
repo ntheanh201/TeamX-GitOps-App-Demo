@@ -57,7 +57,7 @@ jobs:
           name: Deploy
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/event-booking-infrastructure/k8s-ops/backend; ./deploy.release.sh)"
+              ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/TeamX-GitOps; ./deploy.simple.sh)"
             else
               echo "Skipped";
             fi
