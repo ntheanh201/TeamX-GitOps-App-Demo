@@ -59,6 +59,7 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/TeamX-GitOps/simple-app; export TAG="<< pipeline.git.base_revision>>"; ./deploy.simple.sh)"
+              # ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/TeamX-GitOps/simple-app; export TAG="<< pipeline.git.base_revision>>"; ./deploy.argo.sh)"
             else
               echo "Skipped";
             fi
