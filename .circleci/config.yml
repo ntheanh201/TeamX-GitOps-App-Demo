@@ -1,0 +1,79 @@
+version: 2.1
+
+orbs:
+#  node: circleci/node@4.7
+  docker: circleci/docker@2.0.3
+
+jobs:
+  build-and-push:
+    parameters:
+      user:
+        description: Name of github user environment variable
+        default: GHCR_USER
+        type: env_var_name
+      token:
+        description: Name of github token environment variable
+        default: GHCR_PAT
+        type: env_var_name
+    environment:
+      DOCKER_IMAGE: ghcr.io/ntheanh201/teamx-gitops-demo
+      DOCKER_TAG: latest
+    executor: docker/docker
+    working_directory: ~/repo
+    docker:
+      - image: cimg/go:1.19.4
+    steps:
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
+      - checkout
+      - run:
+          name: GHCR Login
+          command: |
+            echo "${<< parameters.token >>}" \
+              | docker login ghcr.io -u "${<< parameters.user >>}" --password-stdin
+      - docker/build:
+          image: $DOCKER_IMAGE
+          tag: $DOCKER_TAG
+      - run:
+          name: Push Staging
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker push $DOCKER_IMAGE:$DOCKER_TAG
+            else
+              echo "Skipped";
+            fi
+#    resource_class: large
+  deploy:
+    environment:
+      EC2_USERNAME: ubuntu
+
+    executor: docker/docker
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "3c:c7:03:62:a6:b6:4e:f4:93:75:02:58:8f:7a:9e:ac"
+      - run:
+          name: Deploy
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_RELEASE_IP "(cd ~/event-booking-infrastructure/k8s-ops/backend; ./deploy.release.sh)"
+            else
+              echo "Skipped";
+            fi
+
+workflows:
+  pipeline:
+    jobs:
+      - build-and-push:
+          context:
+            - server_variables
+          filters:
+            branches:
+              only:
+                - master
+      - deploy:
+          context:
+            - server_variables
+          requires:
+            - build-and-push

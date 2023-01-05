@@ -1,4 +1,4 @@
-FROM golang:1.15.1-alpine3.12 AS build-env
+FROM golang:1.19.4-alpine3.16 AS build-env
 
 WORKDIR /tmp/simple-go-app
 
